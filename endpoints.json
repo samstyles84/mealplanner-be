@@ -1,0 +1,231 @@
+{
+  "GET /api/meals": {
+    "description": "serves an array of all meals",
+    "queries": [],
+    "exampleResponse": {
+      "meals": [
+        {
+          "meal_id": 1,
+          "name": "Corned Beef Hash",
+          "portions": 4
+        }
+      ]
+    }
+  },
+  "POST /api/meals": {
+    "description": "posts a new meal",
+    "queries": [],
+    "examplePostObject": {
+      "name": "Beef, beans and onion",
+      "portions": 2,
+      "recipe": [
+        { "ingredient_id": 1, "quantity": 1 },
+        { "ingredient_id": 2, "quantity": 2 },
+        { "ingredient_id": 3, "quantity": 3 }
+      ]
+    },
+    "exampleResponse": {
+      "recipe": [
+        {
+          "name": "Corned Beef",
+          "type": "Store cupboard",
+          "ingredient_id": 1,
+          "units": "cans",
+          "meal_id": 4,
+          "quantity": 1
+        },
+        {
+          "name": "Baked Beans",
+          "type": "Store cupboard",
+          "ingredient_id": 2,
+          "units": "cans",
+          "meal_id": 4,
+          "quantity": 2
+        },
+        {
+          "name": "Onion",
+          "type": "Veg",
+          "ingredient_id": 3,
+          "units": "no",
+          "meal_id": 4,
+          "quantity": 3
+        }
+      ],
+
+      "name": "Beef, beans and onion",
+      "portions": 2,
+      "meal_id": 4
+    }
+  },
+  "GET /api/meals/:meal_id": {
+    "description": "serves a meal object with correct mealname, ingredients & quantities",
+    "queries": [],
+    "exampleResponse": {
+      "meal": {
+        "meal_id": 1,
+        "name": "Corned Beef Hash",
+        "portions": 4,
+        "recipe": [
+          {
+            "name": "Corned Beef",
+            "type": "Store cupboard",
+            "ingredient_id": 1,
+            "units": "cans",
+            "meal_id": 1,
+            "quantity": 1
+          },
+          {
+            "name": "Baked Beans",
+            "type": "Store cupboard",
+            "ingredient_id": 2,
+            "units": "cans",
+            "meal_id": 1,
+            "quantity": 2
+          }
+        ]
+      }
+    }
+  },
+  "PATCH /api/meals/:meal_id": {
+    "description": "updates an existing meal",
+    "queries": [],
+    "examplePatchObject": {
+      "name": "Corned beef hash",
+      "portions": 6,
+      "recipe": [
+        { "ingredient_id": 1, "quantity": 1 },
+        { "ingredient_id": 2, "quantity": 2 },
+        { "ingredient_id": 3, "quantity": 3 },
+        { "ingredient_id": 10, "quantity": 100 }
+      ]
+    },
+    "exampleResponse": {
+      "recipe": [
+        {
+          "name": "Corned Beef",
+          "type": "Store cupboard",
+          "ingredient_id": 1,
+          "units": "cans",
+          "meal_id": 1,
+          "quantity": 1
+        },
+        {
+          "name": "Baked Beans",
+          "type": "Store cupboard",
+          "ingredient_id": 2,
+          "units": "cans",
+          "meal_id": 1,
+          "quantity": 2
+        },
+        {
+          "name": "Onion",
+          "type": "Veg",
+          "ingredient_id": 3,
+          "units": "no",
+          "meal_id": 1,
+          "quantity": 3
+        },
+        {
+          "name": "Stock cubes",
+          "type": "Store cupboard",
+          "ingredient_id": 10,
+          "units": "no",
+          "meal_id": 1,
+          "quantity": 100
+        }
+      ],
+      "name": "Corned beef hash",
+      "portions": 6,
+      "meal_id": 1
+    }
+  },
+  "GET /api/ingredients": {
+    "description": "serves an array of all ingredients",
+    "queries": ["sort_by", "order"],
+    "exampleResponse": {
+      "ingredients": [
+        {
+          "ingredient_id": 1,
+          "name": "Corned Beef Hash",
+          "type": "Store cupboard",
+          "units": "cans"
+        }
+      ]
+    }
+  },
+  "POST /api/ingredients": {
+    "description": "serves an array of all ingredients",
+    "queries": [],
+    "examplePostObject": {
+      "name": "New ingredient",
+      "type": "Store cupboard",
+      "units": "cans"
+    },
+    "exampleResponse": {
+      "ingredient": {
+        "ingredient_id": 11,
+        "name": "New ingredient",
+        "type": "Store cupboard",
+        "units": "cans"
+      }
+    }
+  },
+  "GET /api/ingredients/:ingredient_id": {
+    "description": "returns an ingredient by ID",
+    "queries": [],
+    "exampleResponse": {
+      "ingredients": [
+        {
+          "name": "Corned Beef",
+          "type": "Store cupboard",
+          "units": "cans",
+          "ingredient_id": 1
+        }
+      ]
+    }
+  },
+  "PATCH /api/ingredients/:ingredient_id": {
+    "description": "returns an ingredient by ID",
+    "queries": [],
+    "examplePatchObject": {
+      "name": "Corned Beef",
+      "type": "Store cupboard",
+      "units": "g"
+    },
+    "exampleResponse": {
+      "ingredient": {
+        "name": "Corned Beef",
+        "type": "Store cupboard",
+        "units": "g",
+        "ingredient_id": 1
+      }
+    }
+  },
+  "DELETE /api/ingredients/:ingredient_id": {
+    "description": "removes an ingredient and all meals that contain it!!!"
+  },
+  "GET /api/ingredients/meal/:meal_id": {
+    "description": "serves an array of ingredients for the meal",
+    "queries": [],
+    "exampleResponse": {
+      "ingredients": [
+        {
+          "name": "Corned Beef",
+          "type": "Store cupboard",
+          "ingredient_id": 1,
+          "units": "cans",
+          "meal_id": 1,
+          "quantity": 1
+        },
+        {
+          "name": "Baked Beans",
+          "type": "Store cupboard",
+          "ingredient_id": 2,
+          "units": "cans",
+          "meal_id": 1,
+          "quantity": 2
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "mealplanner",
+  "version": "1.0.0",
+  "description": "mealplanner",
+  "main": "index.js",
+  "scripts": {
+    "setup-dbs": "psql -f ./db/setup.sql",
+    "seed": "knex seed:run",
+    "test": "NODE_ENV=test && jest",
+    "migrate-latest": "knex migrate:latest",
+    "migrate-rollback": "knex migrate:rollback",
+    "seed:prod": "NODE_ENV=production DB_URL=$(heroku config:get DATABASE_URL) knex seed:run",
+    "migrate-latest:prod": "NODE_ENV=production DB_URL=$(heroku config:get DATABASE_URL) knex migrate:latest",
+    "migrate-rollback:prod": "NODE_ENV=production DB_URL=$(heroku config:get DATABASE_URL) knex migrate:rollback",
+    "start": "node listen.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samstyles84/mealplanner-be"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samstyles84/mealplanner-be"
+  },
+  "homepage": "https://github.com/samstyles84/mealplanner-be",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "knex": "^0.21.2",
+    "pg": "^8.3.0"
+  },
+  "devDependencies": {
+    "jest": "^26.2.2",
+    "jest-sorted": "^1.0.6",
+    "supertest": "^4.0.2"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "jest-sorted"
+    ]
+  },
+  "engines": {
+    "node": "14.4.0"
+  }
+}
