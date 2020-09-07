@@ -1,6 +1,5 @@
 const request = require("supertest");
 const app = require("../app");
-const testData = require("../db/data/test-data");
 const knex = require("../connection");
 
 describe("app", () => {
@@ -12,7 +11,54 @@ describe("app", () => {
     return knex.destroy();
   });
 
+  test("ALL: 404 - non existent path", () => {
+    return request(app)
+      .get("/not-a-route")
+      .expect(404)
+      .then((res) => {
+        expect(res.body.msg).toBe("Path not found! :-(");
+      });
+  });
+
   describe("/api", () => {
+    test("GET: 200 - responds with a JSON object describing all available endpoints", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toEqual(
+            expect.objectContaining({
+              "GET /api": expect.any(Object),
+              "GET /api/meals": expect.any(Object),
+              "POST /api/meals": expect.any(Object),
+              "GET /api/meals/:meal_id": expect.any(Object),
+              "PATCH /api/meals/:meal_id": expect.any(Object),
+              "DELETE /api/meals/:meal_id": expect.any(Object),
+              "GET /api/ingredients": expect.any(Object),
+              "POST /api/ingredients": expect.any(Object),
+              "GET /api/ingredients/:ingredient_id": expect.any(Object),
+              "PATCH /api/ingredients/:ingredient_id": expect.any(Object),
+              "DELETE /api/ingredients/:ingredient_id": expect.any(Object),
+              "GET /api/ingredients/meal/:meal_id": expect.any(Object),
+              "GET /api/ingredients/shoppinglist": expect.any(Object),
+            })
+          );
+        });
+    });
+    test("INVALID METHODS: 405 error", () => {
+      const invalidMethods = ["put", "post", "patch", "delete"];
+      const endPoint = "/api";
+
+      const promises = invalidMethods.map((method) => {
+        return request(app)
+          [method](endPoint)
+          .expect(405)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("method not allowed!!!");
+          });
+      });
+      return Promise.all(promises);
+    });
     describe("/meals", () => {
       test("GET: 200 - responds with an array of all meals", () => {
         return request(app)
@@ -81,6 +127,38 @@ describe("app", () => {
             );
           });
       });
+      test("POST: 400 - Bad Request status code when `POST` request does not include all the required keys", () => {
+        return request(app)
+          .post("/api/meals/")
+          .send({
+            name: "Beef, beans and onion",
+            recipe: [
+              { ingredient_id: 1, quantity: 1 },
+              { ingredient_id: 2, quantity: 2 },
+              { ingredient_id: 3, quantity: 3 },
+            ],
+          })
+          .expect(400)
+          .then(({ body: { msg } }) => {
+            expect(msg).toBe("bad request to db!!!");
+          });
+      });
+      test("POST: 400 - Bad Request status code when `POST` request includes incorrect recipe", () => {
+        //Prevent this on the front-end by checking data types!
+      });
+      test("INVALID METHODS: 405 error", () => {
+        const invalidMethods = ["put", "patch", "delete"];
+        const endPoint = "/api/meals";
+        const promises = invalidMethods.map((method) => {
+          return request(app)
+            [method](endPoint)
+            .expect(405)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("method not allowed!!!");
+            });
+        });
+        return Promise.all(promises);
+      });
       describe("/meals/:meal_id", () => {
         test("GET: 200 - responds with a meal object with correct mealname, ingredients & quantities", () => {
           const apiString = `/api/meals/1`;
@@ -105,6 +183,24 @@ describe("app", () => {
                   meal_id: 1,
                 })
               );
+            });
+        });
+        test("GET: 404 - Meal doesn't exist in the database", () => {
+          const apiString = `/api/meals/999`;
+          return request(app)
+            .get(apiString)
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("meal id not found");
+            });
+        });
+        test("GET: 400 - Badly formed meal_id", () => {
+          const apiString = `/api/meals/sam`;
+          return request(app)
+            .get(apiString)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("bad request to db!!!");
             });
         });
         test("PATCH: 201 - updates a meal", () => {
@@ -163,6 +259,84 @@ describe("app", () => {
               });
             });
         });
+        test("PATCH: 404 - Meal doesn't exist in the database", () => {
+          const apiString = `/api/meals/999`;
+          return request(app)
+            .patch("/api/meals/999")
+            .send({
+              name: "Corned beef hash 2",
+              portions: 6,
+              recipe: [
+                { ingredient_id: 1, quantity: 1 },
+                { ingredient_id: 2, quantity: 2 },
+                { ingredient_id: 3, quantity: 3 },
+                { ingredient_id: 10, quantity: 100 },
+              ],
+            })
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("meal id not found");
+            });
+        });
+        test("PATCH: 400 - Badly formed meal_id", () => {
+          const apiString = `/api/meals/sam`;
+          return request(app)
+            .get(apiString)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("bad request to db!!!");
+            });
+        });
+        test("DELETE: 204 - deletes a meal", () => {
+          return request(app)
+            .delete("/api/meals/1")
+            .expect(204)
+            .then(() => {
+              return request(app).get(`/api/meals`);
+            })
+            .then(({ body: { meals } }) => {
+              expect(meals.every((meal) => meal.meal_id !== 1)).toBe(true);
+            });
+        });
+        test("DELETE: 204 - also removes recipe mapping", () => {
+          return request(app)
+            .delete("/api/meals/1")
+            .expect(204)
+            .then(() => {
+              return request(app)
+                .get(`/api/meals`)
+                .then(() => {
+                  return request(app)
+                    .get(`/api/ingredients/meal/1`)
+                    .expect(404)
+                    .then(({ body: { msg } }) => {
+                      expect(msg).toBe("meal id not found");
+                    });
+                });
+            });
+        });
+        test("DELETE: 404 - Meal doesn't exist in the database", () => {
+          const apiString = `/api/meals/999`;
+          return request(app)
+            .delete("/api/meals/999")
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("meal id not found");
+            });
+        });
+        test("INVALID METHODS: 405 error", () => {
+          const invalidMethods = ["put", "post"];
+          const endPoint = "/api/meals/1";
+          const promises = invalidMethods.map((method) => {
+            return request(app)
+              [method](endPoint)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("method not allowed!!!");
+              });
+          });
+          return Promise.all(promises);
+        });
       });
     });
     describe("/ingredients", () => {
@@ -186,6 +360,37 @@ describe("app", () => {
                 ])
               );
             });
+        });
+        test("GET: 404 - Meal doesn't exist in the database", () => {
+          const apiString = `/api/ingredients/meal/999`;
+          return request(app)
+            .get(apiString)
+            .expect(404)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("meal id not found");
+            });
+        });
+        test("GET: 400 - Badly formed meal_id", () => {
+          const apiString = `/api/ingredients/meal/sam`;
+          return request(app)
+            .get(apiString)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("bad request to db!!!");
+            });
+        });
+        test("INVALID METHODS: 405 error", () => {
+          const invalidMethods = ["put", "post", "patch", "delete"];
+          const endPoint = "/api/ingredients/meal/1";
+          const promises = invalidMethods.map((method) => {
+            return request(app)
+              [method](endPoint)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("method not allowed!!!");
+              });
+          });
+          return Promise.all(promises);
         });
       });
       describe("/ingredients", () => {
@@ -229,6 +434,31 @@ describe("app", () => {
               }
             );
         });
+        test("POST: 400 - Bad Request status code when `POST` request does not include all the required keys", () => {
+          return request(app)
+            .post("/api/ingredients")
+            .send({
+              name: "butter_bridge",
+              type: "some type",
+            })
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("bad request to db!!!");
+            });
+        });
+        test("INVALID METHODS: 405 error", () => {
+          const invalidMethods = ["put", "patch", "delete"];
+          const endPoint = "/api/ingredients/";
+          const promises = invalidMethods.map((method) => {
+            return request(app)
+              [method](endPoint)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("method not allowed!!!");
+              });
+          });
+          return Promise.all(promises);
+        });
         describe("/ingredients/:ingredient_id", () => {
           test("GET: 200 - gets an ingredient by id", () => {
             const apiString = `/api/ingredients/1`;
@@ -242,6 +472,24 @@ describe("app", () => {
                   units: "cans",
                   ingredient_id: 1,
                 });
+              });
+          });
+          test("GET: 404 - Ingredient doesn't exist in the database", () => {
+            const apiString = `/api/ingredients/999`;
+            return request(app)
+              .get(apiString)
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("ingredient id not found");
+              });
+          });
+          test("GET: 400 - Badly formed meal_id", () => {
+            const apiString = `/api/ingredients/sam`;
+            return request(app)
+              .get(apiString)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("bad request to db!!!");
               });
           });
           test("PATCH: 201 - updates an ingredient", () => {
@@ -266,9 +514,197 @@ describe("app", () => {
                 }
               );
           });
-          test("DELETE: 204 - deletes an ingredient", () => {
-            return request(app).delete("/api/ingredients/1").expect(204);
+          test("PATCH: 404 - Ingredient doesn't exist in the database", () => {
+            const apiString = `/api/ingredients/999`;
+            return request(app)
+              .patch("/api/ingredients/999")
+              .send({
+                name: "Corned Beef 2",
+                type: "Store cupboard",
+                units: "g",
+              })
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("ingredient id not found");
+              });
           });
+          test("PATCH: 400 - Badly formed meal_id", () => {
+            const apiString = `/api/ingredients/sam`;
+            return request(app)
+              .patch("/api/ingredients/sam")
+              .send({
+                name: "Corned Beef 2",
+                type: "Store cupboard",
+                units: "g",
+              })
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("bad request to db!!!");
+              });
+          });
+          test("DELETE: 204 - deletes an unused ingredient", () => {
+            return request(app)
+              .delete("/api/ingredients/13")
+              .expect(204)
+              .then(() => {
+                return request(app).get(`/api/ingredients/`);
+              })
+              .then(({ body: { ingredients } }) => {
+                expect(
+                  ingredients.every(
+                    (ingredient) => ingredient.ingredient_id !== 13
+                  )
+                ).toBe(true);
+              });
+          });
+          test("DELETE: 404 - doesn't delete a used ingredient", () => {
+            return request(app)
+              .delete("/api/ingredients/1")
+              .expect(404)
+              .then(() => {
+                return request(app).get(`/api/ingredients/`);
+              })
+              .then(({ body: { ingredients } }) => {
+                expect(
+                  ingredients.every(
+                    (ingredient) => ingredient.ingredient_id !== 1
+                  )
+                ).toBe(false);
+              });
+          });
+          test("DELETE: 400 - Badly formed meal_id", () => {
+            const apiString = `/api/ingredients/sam`;
+            return request(app)
+              .delete("/api/ingredients/sam")
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("bad request to db!!!");
+              });
+          });
+          test("DELETE: 404 - Ingredient doesn't exist in the database", () => {
+            const apiString = `/api/ingredients/999`;
+            return request(app)
+              .delete("/api/ingredients/999")
+              .expect(404)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("ingredient id not found");
+              });
+          });
+          test("INVALID METHODS: 405 error", () => {
+            const invalidMethods = ["put", "post"];
+            const endPoint = "/api/ingredients/1";
+            const promises = invalidMethods.map((method) => {
+              return request(app)
+                [method](endPoint)
+                .expect(405)
+                .then(({ body: { msg } }) => {
+                  expect(msg).toBe("method not allowed!!!");
+                });
+            });
+            return Promise.all(promises);
+          });
+        });
+      });
+      describe("/ingredients/shoppinglist", () => {
+        test("GET: 200 - responds with an array of the correct ingredients when given mutliple meals", () => {
+          const apiString = `/api/ingredients/shoppinglist?meals=1,3`;
+          return request(app)
+            .get(apiString)
+            .expect(200)
+            .then(({ body: { shoppinglist } }) => {
+              expect(shoppinglist).toEqual({
+                ingredients: [
+                  {
+                    ingredient_id: 1,
+                    name: "Corned Beef",
+                    type: "Store cupboard",
+                    units: "cans",
+                    quantity: "1",
+                  },
+                  {
+                    ingredient_id: 2,
+                    name: "Baked Beans",
+                    type: "Store cupboard",
+                    units: "cans",
+                    quantity: "2",
+                  },
+                  {
+                    ingredient_id: 3,
+                    name: "Onion",
+                    type: "Veg",
+                    units: "no",
+                    quantity: "2",
+                  },
+                  {
+                    ingredient_id: 4,
+                    name: "Potatoes",
+                    type: "Veg",
+                    units: "g",
+                    quantity: "1000",
+                  },
+                  {
+                    ingredient_id: 8,
+                    name: "Carrot",
+                    type: "Veg",
+                    units: "no",
+                    quantity: "1",
+                  },
+                  {
+                    ingredient_id: 9,
+                    name: "Chopped tomatoes",
+                    type: "Store cupboard",
+                    units: "cans",
+                    quantity: "1",
+                  },
+                  {
+                    ingredient_id: 10,
+                    name: "Stock cubes",
+                    type: "Store cupboard",
+                    units: "no",
+                    quantity: "1",
+                  },
+                  {
+                    ingredient_id: 11,
+                    name: "Bacon",
+                    type: "Meat",
+                    units: "g",
+                    quantity: "60",
+                  },
+                  {
+                    ingredient_id: 12,
+                    name: "Red lentils",
+                    type: "Store cupboard",
+                    units: "g",
+                    quantity: "50",
+                  },
+                ],
+                portions: 7,
+                meal_ids: [1, 3],
+                meal_names: ["Corned Beef Hash", "Lentil and tomato soup"],
+              });
+            });
+        });
+        test("GET: 400 - Badly formed meal_id", () => {
+          const apiString = `/api/ingredients/shoppinglist?meals=1,sam`;
+          return request(app)
+            .get(apiString)
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("bad request to db!!!");
+            });
+        });
+        test("INVALID METHODS: 405 error", () => {
+          const invalidMethods = ["put", "post", "patch", "delete"];
+          const endPoint = "/api/ingredients/shoppinglist";
+          const promises = invalidMethods.map((method) => {
+            return request(app)
+              [method](endPoint)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("method not allowed!!!");
+              });
+          });
+          return Promise.all(promises);
         });
       });
     });

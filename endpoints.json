@@ -1,4 +1,7 @@
 {
+  "GET /api": {
+    "description": "serves up a json representation of all the available endpoints of the api"
+  },
   "GET /api/meals": {
     "description": "serves an array of all meals",
     "queries": [],
@@ -139,6 +142,9 @@
       "meal_id": 1
     }
   },
+  "DELETE /api/meals/:meal_id": {
+    "description": "removes a meal and any associated recipe mapping (not the ingredients!)"
+  },
   "GET /api/ingredients": {
     "description": "serves an array of all ingredients",
     "queries": ["sort_by", "order"],
@@ -154,7 +160,7 @@
     }
   },
   "POST /api/ingredients": {
-    "description": "serves an array of all ingredients",
+    "description": "adds a new ingredient",
     "queries": [],
     "examplePostObject": {
       "name": "New ingredient",
@@ -202,7 +208,7 @@
     }
   },
   "DELETE /api/ingredients/:ingredient_id": {
-    "description": "removes an ingredient and all meals that contain it!!!"
+    "description": "removes an ingredient only if no meals contain it"
   },
   "GET /api/ingredients/meal/:meal_id": {
     "description": "serves an array of ingredients for the meal",
@@ -226,6 +232,82 @@
           "quantity": 2
         }
       ]
+    }
+  },
+  "GET /api/ingredients/shoppinglist": {
+    "description": "serves a shopping list object for meal_ids provided as a comma separated list as part of the query. Includes combined quantities of ingredients .",
+    "queries": ["meals"],
+    "exampleResponse": {
+      "shoppinglist": {
+        "ingredients": [
+          {
+            "ingredient_id": 1,
+            "name": "Corned Beef",
+            "type": "Store cupboard",
+            "units": "cans",
+            "quantity": "1"
+          },
+          {
+            "ingredient_id": 2,
+            "name": "Baked Beans",
+            "type": "Store cupboard",
+            "units": "cans",
+            "quantity": "2"
+          },
+          {
+            "ingredient_id": 3,
+            "name": "Onion",
+            "type": "Veg",
+            "units": "no",
+            "quantity": "2"
+          },
+          {
+            "ingredient_id": 4,
+            "name": "Potatoes",
+            "type": "Veg",
+            "units": "g",
+            "quantity": "1000"
+          },
+          {
+            "ingredient_id": 8,
+            "name": "Carrot",
+            "type": "Veg",
+            "units": "no",
+            "quantity": "1"
+          },
+          {
+            "ingredient_id": 9,
+            "name": "Chopped tomatoes",
+            "type": "Store cupboard",
+            "units": "cans",
+            "quantity": "1"
+          },
+          {
+            "ingredient_id": 10,
+            "name": "Stock cubes",
+            "type": "Store cupboard",
+            "units": "no",
+            "quantity": "1"
+          },
+          {
+            "ingredient_id": 11,
+            "name": "Bacon",
+            "type": "Meat",
+            "units": "g",
+            "quantity": "60"
+          },
+          {
+            "ingredient_id": 12,
+            "name": "Red lentils",
+            "type": "Store cupboard",
+            "units": "g",
+            "quantity": "50"
+          }
+        ],
+        "portions": 7,
+        "meal_ids": [1, 3],
+        "meal_names": ["Corned Beef Hash", "Lentil and tomato soup"]
+      }
     }
   }
 }

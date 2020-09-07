@@ -1,14 +1,15 @@
 const {
-  fetchMeals,
+  fetchMealInfo,
   fetchMealById,
   postMeal,
   patchMeal,
+  deleteMeal,
 } = require("../models/meals.models");
 
 const { postRecipe, deleteRecipe } = require("../models/recipes.models");
 
 const sendMeals = (req, res, next) => {
-  fetchMeals()
+  fetchMealInfo()
     .then((meals) => {
       res.status(200).send({ meals });
     })
@@ -62,4 +63,17 @@ const updateMeal = (req, res, next) => {
     });
 };
 
-module.exports = { sendMeals, sendMealbyId, addMeal, updateMeal };
+const removeMeal = (req, res, next) => {
+  const { meal_id } = req.params;
+  deleteMeal(meal_id)
+    .then((deletedMeal) => {
+      if (deletedMeal) {
+        res.sendStatus(204);
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+module.exports = { sendMeals, sendMealbyId, addMeal, updateMeal, removeMeal };

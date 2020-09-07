@@ -5,7 +5,10 @@ const {
   fetchIngredient,
   patchIngredient,
   deleteIngredient,
+  fetchIngredientsForMealIDs,
 } = require("../models/ingredients.models");
+
+const { fetchMealInfoForMealIDs } = require("../models/meals.models");
 
 const sendIngredientsByMealId = (req, res, next) => {
   const { meal_id } = req.params;
@@ -71,7 +74,43 @@ const removeIngredient = (req, res, next) => {
     .then((deletedIngredients) => {
       if (deletedIngredients) {
         res.sendStatus(204);
+      } else {
       }
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const sendShoppingList = (req, res, next) => {
+  const { meals } = req.query;
+  const mealsArray = meals.split(",");
+
+  Promise.all([
+    fetchMealInfoForMealIDs(mealsArray),
+    fetchIngredientsForMealIDs(mealsArray),
+  ])
+    .then((promiseArr) => {
+      const mealArr = promiseArr[0];
+      const ingredientsArr = promiseArr[1];
+
+      let portions = 0;
+      const meal_ids = [];
+      const meal_names = [];
+
+      mealArr.forEach((meal) => {
+        portions += meal.portions;
+        meal_ids.push(meal.meal_id);
+        meal_names.push(meal.name);
+      });
+
+      const shoppinglist = {
+        ingredients: ingredientsArr,
+        meal_ids: meal_ids,
+        meal_names: meal_names,
+        portions: portions,
+      };
+      res.status(200).send({ shoppinglist });
     })
     .catch((err) => {
       next(err);
@@ -85,4 +124,5 @@ module.exports = {
   sendIngredientById,
   updateIngredient,
   removeIngredient,
+  sendShoppingList,
 };

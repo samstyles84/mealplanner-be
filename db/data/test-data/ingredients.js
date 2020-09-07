@@ -59,4 +59,9 @@ module.exports = [
     type: "Store cupboard",
     units: "g",
   },
+  {
+    name: "Unused ingredient",
+    type: "Store cupboard",
+    units: "g",
+  },
 ];

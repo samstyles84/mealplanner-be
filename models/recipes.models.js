@@ -13,11 +13,21 @@ exports.postRecipe = (meal_id, recipeArr) => {
     .insert(recipeRowsToInsert)
     .returning("*")
     .then((recipeRows) => {
-      console.log(recipeRows, "recipemodel");
       return recipeRows;
     });
 };
 
 exports.deleteRecipe = (meal_id) => {
   return knex("recipemapping").where("recipemapping.meal_id", meal_id).del();
+};
+
+exports.checkIngredientUsed = (ingredient_id) => {
+  return knex("recipemapping")
+    .where("recipemapping.ingredient_id", ingredient_id)
+    .returning("*")
+    .then((recipeRows) => {
+      if (recipeRows.length > 0) {
+        return true;
+      } else return false;
+    });
 };

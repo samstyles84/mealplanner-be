@@ -1,7 +1,7 @@
 const knex = require("../connection");
 const { fetchIngredientsByMealId } = require("./ingredients.models");
 
-exports.fetchMeals = (meal_id) => {
+exports.fetchMealInfo = (meal_id) => {
   return knex
     .select()
     .from("meals")
@@ -10,14 +10,33 @@ exports.fetchMeals = (meal_id) => {
       if (meal_id) query.where("meal_id", meal_id);
     })
     .then((mealArray) => {
-      return mealArray;
+      if (mealArray.length === 0) {
+        return Promise.reject({ status: 404, msg: "meal id not found" });
+      } else {
+        return mealArray;
+      }
+    });
+};
+
+exports.fetchMealInfoForMealIDs = (mealsArray) => {
+  return knex
+    .select()
+    .from("meals")
+    .returning("*")
+    .whereIn("meal_id", mealsArray)
+    .then((mealArray) => {
+      if (mealArray.length === 0) {
+        return Promise.reject({ status: 404, msg: "meal id not found" });
+      } else {
+        return mealArray;
+      }
     });
 };
 
 exports.fetchMealById = (meal_id) => {
   return Promise.all([
     fetchIngredientsByMealId(meal_id),
-    exports.fetchMeals(meal_id),
+    exports.fetchMealInfo(meal_id),
   ]).then((promiseArray) => {
     const mealObj = {};
     promiseArray.forEach((promise) => {
@@ -52,9 +71,24 @@ exports.patchMeal = (meal_id, name, portions) => {
       if (mealArray.length === 0) {
         return Promise.reject({
           status: 404,
-          msg: "non-existant meal id!!!",
+          msg: "meal id not found",
         });
       }
       return mealArray[0];
+    });
+};
+
+exports.deleteMeal = (meal_id) => {
+  return knex("meals")
+    .where("meals.meal_id", meal_id)
+    .then((meal) => {
+      if (meal.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "meal id not found",
+        });
+      } else {
+        return knex("meals").where("meals.meal_id", meal_id).del();
+      }
     });
 };
