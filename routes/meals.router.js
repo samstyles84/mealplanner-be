@@ -7,6 +7,7 @@ const {
   addMeal,
   updateMeal,
   removeMeal,
+  updateVotes,
 } = require("../controllers/meals.controllers");
 
 const { handle405s } = require("../errors");
@@ -19,6 +20,8 @@ mealsRouter
   .patch(updateMeal)
   .delete(removeMeal)
   .all(handle405s);
+
+mealsRouter.route("/:meal_id/votes").patch(updateVotes).all(handle405s);
 
 mealsRouter.use("/ingredients", ingredientsRouter).all(handle405s);
 

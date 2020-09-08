@@ -59,6 +59,39 @@ describe("app", () => {
       });
       return Promise.all(promises);
     });
+    describe("/users/:username", () => {
+      test("GET: 200 - responds true if user exists", () => {
+        const apiString = `/api/users/sam`;
+        return request(app)
+          .get(apiString)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).toBe(true);
+          });
+      });
+      test("GET: 200 - responds false if user doesn't exist", () => {
+        const apiString = `/api/users/banksy`;
+        return request(app)
+          .get(apiString)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body).toBe(false);
+          });
+      });
+      test("INVALID METHODS: 405 error", () => {
+        const invalidMethods = ["put", "post", "patch", "delete"];
+        const endPoint = "/api/users/sam";
+        const promises = invalidMethods.map((method) => {
+          return request(app)
+            [method](endPoint)
+            .expect(405)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("method not allowed!!!");
+            });
+        });
+        return Promise.all(promises);
+      });
+    });
     describe("/meals", () => {
       test("GET: 200 - responds with an array of all meals", () => {
         return request(app)
@@ -71,6 +104,8 @@ describe("app", () => {
                   meal_id: expect.any(Number),
                   name: expect.any(String),
                   portions: expect.any(Number),
+                  votes: expect.any(Number),
+                  source: expect.any(String),
                 }),
               ])
             );
@@ -82,11 +117,13 @@ describe("app", () => {
           .send({
             name: "Beef, beans and onion",
             portions: 2,
+            votes: 0,
             recipe: [
               { ingredient_id: 1, quantity: 1 },
               { ingredient_id: 2, quantity: 2 },
               { ingredient_id: 3, quantity: 3 },
             ],
+            source: "Totally made up!",
           })
           .expect(201)
           .then(({ body: { meal } }) => {
@@ -123,6 +160,8 @@ describe("app", () => {
                 name: "Beef, beans and onion",
                 portions: 2,
                 meal_id: expect.any(Number),
+                votes: 0,
+                source: "Totally made up!",
               })
             );
           });
@@ -215,6 +254,8 @@ describe("app", () => {
                 { ingredient_id: 3, quantity: 3 },
                 { ingredient_id: 10, quantity: 100 },
               ],
+              votes: 1,
+              source: "new source!",
             })
             .expect(201)
             .then(({ body: { meal } }) => {
@@ -256,13 +297,15 @@ describe("app", () => {
                 name: "Corned beef hash",
                 portions: 6,
                 meal_id: 1,
+                votes: 2,
+                source: "new source!",
               });
             });
         });
-        test("PATCH: 404 - Meal doesn't exist in the database", () => {
-          const apiString = `/api/meals/999`;
+        test("PATCH: 400 - Badly formed meal_id", () => {
+          const apiString = `/api/meals/sam`;
           return request(app)
-            .patch("/api/meals/999")
+            .patch(apiString)
             .send({
               name: "Corned beef hash 2",
               portions: 6,
@@ -273,15 +316,6 @@ describe("app", () => {
                 { ingredient_id: 10, quantity: 100 },
               ],
             })
-            .expect(404)
-            .then(({ body: { msg } }) => {
-              expect(msg).toBe("meal id not found");
-            });
-        });
-        test("PATCH: 400 - Badly formed meal_id", () => {
-          const apiString = `/api/meals/sam`;
-          return request(app)
-            .get(apiString)
             .expect(400)
             .then(({ body: { msg } }) => {
               expect(msg).toBe("bad request to db!!!");
@@ -336,6 +370,54 @@ describe("app", () => {
               });
           });
           return Promise.all(promises);
+        });
+      });
+      describe("/meals/:meal_id/votes", () => {
+        test("PATCH: 201 - updates votes", () => {
+          const apiString = `/api/meals/1/votes`;
+          return request(app)
+            .patch(apiString)
+            .send({
+              votes: 10,
+            })
+            .expect(201)
+            .then(() => {
+              return request(app)
+                .get("/api/meals/1")
+                .then(({ body: { meal } }) => {
+                  expect(meal).toEqual(
+                    expect.objectContaining({
+                      recipe: expect.arrayContaining([
+                        expect.objectContaining({
+                          name: expect.any(String),
+                          type: expect.any(String),
+                          ingredient_id: expect.any(Number),
+                          units: expect.any(String),
+                          meal_id: 1,
+                          quantity: expect.any(Number),
+                        }),
+                      ]),
+                      name: "Corned Beef Hash",
+                      portions: 4,
+                      meal_id: 1,
+                      votes: 11,
+                      source: "Handwritten",
+                    })
+                  );
+                });
+            });
+        });
+        test("PATCH: 400 - Badly formed meal_id", () => {
+          const apiString = `/api/meals/sam/votes`;
+          return request(app)
+            .patch(apiString)
+            .send({
+              votes: 10,
+            })
+            .expect(400)
+            .then(({ body: { msg } }) => {
+              expect(msg).toBe("bad request to db!!!");
+            });
         });
       });
     });
@@ -705,6 +787,177 @@ describe("app", () => {
               });
           });
           return Promise.all(promises);
+        });
+      });
+      describe("/ingredients/recipes", () => {
+        test("GET: 200 - responds with an array of ingredients and how many times they are used in meals", () => {
+          const apiString = `/api/ingredients/recipes`;
+          return request(app)
+            .get(apiString)
+            .expect(200)
+            .then(({ body: { ingredients } }) => {
+              expect(ingredients).toEqual([
+                {
+                  ingredient_id: 1,
+                  name: "Corned Beef",
+                  type: "Store cupboard",
+                  units: "cans",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 2,
+                  name: "Baked Beans",
+                  type: "Store cupboard",
+                  units: "cans",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 3,
+                  name: "Onion",
+                  type: "Veg",
+                  units: "no",
+                  recipesUsed: "2",
+                },
+                {
+                  ingredient_id: 4,
+                  name: "Potatoes",
+                  type: "Veg",
+                  units: "g",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 5,
+                  name: "Fishcakes",
+                  type: "Meat",
+                  units: "no",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 6,
+                  name: "Waffles",
+                  type: "Freezer",
+                  units: "no",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 7,
+                  name: "Misc green veg",
+                  type: "Veg",
+                  units: "no",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 8,
+                  name: "Carrot",
+                  type: "Veg",
+                  units: "no",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 9,
+                  name: "Chopped tomatoes",
+                  type: "Store cupboard",
+                  units: "cans",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 10,
+                  name: "Stock cubes",
+                  type: "Store cupboard",
+                  units: "no",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 11,
+                  name: "Bacon",
+                  type: "Meat",
+                  units: "g",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 12,
+                  name: "Red lentils",
+                  type: "Store cupboard",
+                  units: "g",
+                  recipesUsed: "1",
+                },
+                {
+                  ingredient_id: 13,
+                  name: "Unused ingredient",
+                  type: "Store cupboard",
+                  units: "g",
+                  recipesUsed: "0",
+                },
+              ]);
+            });
+        });
+        test("INVALID METHODS: 405 error", () => {
+          const invalidMethods = ["put", "post", "patch", "delete"];
+          const endPoint = "/api/ingredients/recipes";
+          const promises = invalidMethods.map((method) => {
+            return request(app)
+              [method](endPoint)
+              .expect(405)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("method not allowed!!!");
+              });
+          });
+          return Promise.all(promises);
+        });
+        describe("/ingredients/recipes/:ingredient_id", () => {
+          test("GET: 200 - responds with an array indicating which meals an ingredient is used in", () => {
+            const apiString = `/api/ingredients/recipes/3`;
+            return request(app)
+              .get(apiString)
+              .expect(200)
+              .then(({ body: { meals } }) => {
+                expect(meals).toEqual([
+                  "Corned Beef Hash",
+                  "Lentil and tomato soup",
+                ]);
+              });
+          });
+          test("GET: 200 - responds with an array indicating which meals an ingredient is used in", () => {
+            const apiString = `/api/ingredients/recipes/1`;
+            return request(app)
+              .get(apiString)
+              .expect(200)
+              .then(({ body: { meals } }) => {
+                expect(meals).toEqual(["Corned Beef Hash"]);
+              });
+          });
+          test("GET: 200 - responds with an array indicating which meals an ingredient is used in", () => {
+            const apiString = `/api/ingredients/recipes/13`;
+            return request(app)
+              .get(apiString)
+              .expect(200)
+              .then(({ body: { meals } }) => {
+                expect(meals).toEqual([]);
+              });
+          });
+
+          test("GET: 400 - Badly formed meal_id", () => {
+            const apiString = `/api/ingredients/recipes/sam`;
+            return request(app)
+              .get(apiString)
+              .expect(400)
+              .then(({ body: { msg } }) => {
+                expect(msg).toBe("bad request to db!!!");
+              });
+          });
+          test("INVALID METHODS: 405 error", () => {
+            const invalidMethods = ["put", "post", "patch", "delete"];
+            const endPoint = "/api/ingredients/recipes/1";
+            const promises = invalidMethods.map((method) => {
+              return request(app)
+                [method](endPoint)
+                .expect(405)
+                .then(({ body: { msg } }) => {
+                  expect(msg).toBe("method not allowed!!!");
+                });
+            });
+            return Promise.all(promises);
+          });
         });
       });
     });

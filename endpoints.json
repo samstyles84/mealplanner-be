@@ -15,6 +15,11 @@
       ]
     }
   },
+  "GET /api/users/:username": {
+    "description": "returns true if username exists, false otherwise",
+    "queries": [],
+    "exampleResponse": true
+  },
   "POST /api/meals": {
     "description": "posts a new meal",
     "queries": [],
@@ -159,6 +164,42 @@
       ]
     }
   },
+  "GET /api/ingredients/recipes": {
+    "description": "responds with an array of ingredients and how many times they are used in meals",
+    "queries": "not currently sortable",
+    "exampleResponse": {
+      "ingredients": [
+        {
+          "ingredient_id": 1,
+          "name": "Corned Beef",
+          "type": "Store cupboard",
+          "units": "cans",
+          "recipesUsed": "1"
+        },
+        {
+          "ingredient_id": 2,
+          "name": "Baked Beans",
+          "type": "Store cupboard",
+          "units": "cans",
+          "recipesUsed": "1"
+        },
+        {
+          "ingredient_id": 3,
+          "name": "Onion",
+          "type": "Veg",
+          "units": "no",
+          "recipesUsed": "2"
+        }
+      ]
+    }
+  },
+  "GET /api/ingredients/recipes/:ingredient_id": {
+    "description": "responds with an array of meals used by an ingredient",
+    "queries": [],
+    "exampleResponse": {
+      "ingredients": ["Corned Beef Hash", "Lentil and tomato soup"]
+    }
+  },
   "POST /api/ingredients": {
     "description": "adds a new ingredient",
     "queries": [],
@@ -191,7 +232,7 @@
     }
   },
   "PATCH /api/ingredients/:ingredient_id": {
-    "description": "returns an ingredient by ID",
+    "description": "updates an ingredient by ID",
     "queries": [],
     "examplePatchObject": {
       "name": "Corned Beef",

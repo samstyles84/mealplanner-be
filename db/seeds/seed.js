@@ -1,4 +1,4 @@
-const { mealsData, ingredientsData } = require("../data/index.js");
+const { mealsData, ingredientsData, usersData } = require("../data/index.js");
 
 const { formatMeals, getRecipes } = require("../utils/utils");
 
@@ -15,7 +15,6 @@ exports.seed = function (knex) {
         .returning(["ingredient_id", "name"])
         .then((ingredientsRows) => {
           const formattedMeals = formatMeals(mealsData);
-
           return knex("meals")
             .insert(formattedMeals)
             .returning(["meal_id", "name"])
@@ -25,7 +24,11 @@ exports.seed = function (knex) {
                 mealRows,
                 ingredientsRows
               );
-              return knex("recipemapping").insert(recipeTable);
+              return knex("recipemapping")
+                .insert(recipeTable)
+                .then(() => {
+                  return knex("users").insert(usersData);
+                });
             });
         });
     });

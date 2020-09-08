@@ -4,6 +4,7 @@ const {
   postMeal,
   patchMeal,
   deleteMeal,
+  patchVotes,
 } = require("../models/meals.models");
 
 const { postRecipe, deleteRecipe } = require("../models/recipes.models");
@@ -30,8 +31,8 @@ const sendMealbyId = (req, res, next) => {
 };
 
 const addMeal = (req, res, next) => {
-  const { name, portions, recipe } = req.body;
-  postMeal(name, portions, recipe)
+  const { name, portions, recipe, votes, source } = req.body;
+  postMeal(name, portions, recipe, votes, source)
     .then((mealRow) => {
       postRecipe(mealRow[0].meal_id, recipe).then((recipemapping) => {
         fetchMealById(recipemapping[0].meal_id).then((meal) => {
@@ -45,10 +46,10 @@ const addMeal = (req, res, next) => {
 };
 
 const updateMeal = (req, res, next) => {
-  const { name, portions, recipe } = req.body;
+  const { name, portions, recipe, votes, source } = req.body;
   const { meal_id } = req.params;
 
-  patchMeal(meal_id, name, portions)
+  patchMeal(meal_id, name, portions, votes, source)
     .then((mealRow) => {
       deleteRecipe(meal_id).then((deletedRows) => {
         postRecipe(meal_id, recipe).then((recipemapping) => {
@@ -57,6 +58,18 @@ const updateMeal = (req, res, next) => {
           });
         });
       });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const updateVotes = (req, res, next) => {
+  const { votes } = req.body;
+  const { meal_id } = req.params;
+  patchVotes(meal_id, votes)
+    .then(() => {
+      res.sendStatus(201);
     })
     .catch((err) => {
       next(err);
@@ -76,4 +89,11 @@ const removeMeal = (req, res, next) => {
     });
 };
 
-module.exports = { sendMeals, sendMealbyId, addMeal, updateMeal, removeMeal };
+module.exports = {
+  sendMeals,
+  sendMealbyId,
+  addMeal,
+  updateMeal,
+  removeMeal,
+  updateVotes,
+};

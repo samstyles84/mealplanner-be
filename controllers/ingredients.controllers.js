@@ -10,6 +10,11 @@ const {
 
 const { fetchMealInfoForMealIDs } = require("../models/meals.models");
 
+const {
+  fetchIngredientUsage,
+  fetchRecipeUsage,
+} = require("../models/recipes.models");
+
 const sendIngredientsByMealId = (req, res, next) => {
   const { meal_id } = req.params;
   fetchIngredientsByMealId(meal_id)
@@ -26,6 +31,30 @@ const sendIngredientById = (req, res, next) => {
   fetchIngredient(ingredient_id)
     .then((ingredients) => {
       res.status(200).send({ ingredients });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const sendIngredientUsage = (req, res, next) => {
+  fetchIngredientUsage()
+    .then((ingredients) => {
+      res.status(200).send({ ingredients });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+const sendRecipeUsage = (req, res, next) => {
+  const { ingredient_id } = req.params;
+  fetchRecipeUsage(ingredient_id)
+    .then((mealArray) => {
+      const meals = mealArray.map((meal) => {
+        return meal.name;
+      });
+      res.status(200).send({ meals });
     })
     .catch((err) => {
       next(err);
@@ -125,4 +154,6 @@ module.exports = {
   updateIngredient,
   removeIngredient,
   sendShoppingList,
+  sendIngredientUsage,
+  sendRecipeUsage,
 };

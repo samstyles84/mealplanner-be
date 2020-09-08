@@ -46,27 +46,55 @@ exports.fetchMealById = (meal_id) => {
         mealObj.meal_id = promise[0].meal_id;
         mealObj.name = promise[0].name;
         mealObj.portions = promise[0].portions;
+        mealObj.votes = promise[0].votes;
+        mealObj.source = promise[0].source;
       }
     });
     return mealObj;
   });
 };
 
-exports.postMeal = (name, portions, recipe) => {
-  const mealToInsert = { name: name, portions: portions };
+exports.postMeal = (name, portions, recipe, votes, source) => {
+  const mealToInsert = {
+    name: name,
+    portions: portions,
+    votes: votes,
+    source: source,
+  };
   return knex("meals").insert(mealToInsert).returning("*");
 };
 
-exports.patchMeal = (meal_id, name, portions) => {
+exports.patchMeal = (meal_id, name, portions, votes, source) => {
   return knex("meals")
     .where("meals.meal_id", meal_id)
+    .increment({
+      votes: votes,
+    })
     .update(
       {
         name: name,
         portions: portions,
+        source: source,
       },
-      ["meal_id", "name", "portions"]
+      ["meal_id", "name", "portions", "votes", "source"]
     )
+    .then((mealArray) => {
+      if (mealArray.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "meal id not found",
+        });
+      }
+      return mealArray[0];
+    });
+};
+
+exports.patchVotes = (meal_id, votes) => {
+  return knex("meals")
+    .where("meals.meal_id", meal_id)
+    .increment({
+      votes: votes,
+    })
     .then((mealArray) => {
       if (mealArray.length === 0) {
         return Promise.reject({

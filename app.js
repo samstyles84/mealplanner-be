@@ -9,6 +9,8 @@ const {
   handle500s,
 } = require("./errors");
 
+console.log("in app");
+
 const app = express();
 
 app.use(cors());

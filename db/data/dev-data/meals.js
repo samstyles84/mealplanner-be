@@ -4,12 +4,16 @@ module.exports = [
     portions: 4,
     ingredients: ["Corned Beef", "Baked Beans", "Onion", "Potatoes"],
     quantities: [1, 2, 1, 1000],
+    votes: 0,
+    source: "Handwritten",
   },
   {
     name: "Fishcakes with misc. green veg and waffles",
     portions: 2,
     ingredients: ["Fishcakes", "Waffles", "Misc green veg"],
     quantities: [4, 4, 1],
+    votes: 0,
+    source: "Handwritten",
   },
   {
     name: "Lentil and tomato soup",
@@ -23,5 +27,7 @@ module.exports = [
       "Red lentils",
     ],
     quantities: [1, 1, 1, 1, 60, 50],
+    votes: 0,
+    source: "Handwritten",
   },
 ];

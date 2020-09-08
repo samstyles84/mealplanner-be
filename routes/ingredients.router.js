@@ -9,7 +9,11 @@ const {
   sendShoppingList,
 } = require("../controllers/ingredients.controllers");
 
+const recipesRouter = require("./recipes.router");
+
 const { handle405s } = require("../errors");
+
+console.log("in router");
 
 ingredientsRouter
   .route("/")
@@ -23,6 +27,8 @@ ingredientsRouter
   .all(handle405s);
 
 ingredientsRouter.route("/shoppinglist").get(sendShoppingList).all(handle405s);
+
+ingredientsRouter.use("/recipes", recipesRouter);
 
 ingredientsRouter
   .route("/:ingredient_id")

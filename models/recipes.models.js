@@ -31,3 +31,36 @@ exports.checkIngredientUsed = (ingredient_id) => {
       } else return false;
     });
 };
+
+exports.fetchIngredientUsage = () => {
+  return knex
+    .select(
+      "ingredients.ingredient_id",
+      "ingredients.name",
+      "ingredients.type",
+      "ingredients.units"
+    )
+    .count("recipemapping.quantity as recipesUsed")
+    .from("ingredients")
+    .leftJoin(
+      "recipemapping",
+      "ingredients.ingredient_id",
+      "recipemapping.ingredient_id"
+    )
+    .groupBy(
+      "ingredients.ingredient_id",
+      "ingredients.name",
+      "ingredients.type",
+      "ingredients.units",
+      "recipemapping.quantity"
+    )
+    .orderBy("ingredients.ingredient_id");
+};
+
+exports.fetchRecipeUsage = (ingredient_id) => {
+  return knex
+    .select("meals.meal_id", "meals.name")
+    .from("meals")
+    .leftJoin("recipemapping", "meals.meal_id", "recipemapping.meal_id")
+    .where("recipemapping.ingredient_id", ingredient_id);
+};
