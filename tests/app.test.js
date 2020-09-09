@@ -912,8 +912,8 @@ describe("app", () => {
               .expect(200)
               .then(({ body: { meals } }) => {
                 expect(meals).toEqual([
-                  "Corned Beef Hash",
-                  "Lentil and tomato soup",
+                  { meal_id: 1, name: "Corned Beef Hash" },
+                  { meal_id: 3, name: "Lentil and tomato soup" },
                 ]);
               });
           });
@@ -923,7 +923,9 @@ describe("app", () => {
               .get(apiString)
               .expect(200)
               .then(({ body: { meals } }) => {
-                expect(meals).toEqual(["Corned Beef Hash"]);
+                expect(meals).toEqual([
+                  { meal_id: 1, name: "Corned Beef Hash" },
+                ]);
               });
           });
           test("GET: 200 - responds with an array indicating which meals an ingredient is used in", () => {

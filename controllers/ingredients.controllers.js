@@ -50,10 +50,7 @@ const sendIngredientUsage = (req, res, next) => {
 const sendRecipeUsage = (req, res, next) => {
   const { ingredient_id } = req.params;
   fetchRecipeUsage(ingredient_id)
-    .then((mealArray) => {
-      const meals = mealArray.map((meal) => {
-        return meal.name;
-      });
+    .then((meals) => {
       res.status(200).send({ meals });
     })
     .catch((err) => {
