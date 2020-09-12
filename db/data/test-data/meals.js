@@ -6,6 +6,7 @@ module.exports = [
     quantities: [1, 2, 1, 1000],
     votes: 1,
     source: "Handwritten",
+    imgURL: "",
   },
   {
     name: "Fishcakes with misc. green veg and waffles",
@@ -14,6 +15,7 @@ module.exports = [
     quantities: [4, 4, 1],
     votes: 0,
     source: "Handwritten",
+    imgURL: "",
   },
   {
     name: "Lentil and tomato soup",
@@ -29,5 +31,6 @@ module.exports = [
     quantities: [1, 1, 1, 1, 60, 50],
     votes: 0,
     source: "Handwritten",
+    imgURL: "",
   },
 ];

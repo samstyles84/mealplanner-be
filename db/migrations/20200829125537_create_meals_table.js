@@ -5,7 +5,8 @@ exports.up = function (knex) {
     mealsTable.string("name").unique().notNullable();
     mealsTable.integer("portions").notNullable();
     mealsTable.integer("votes").notNullable();
-    mealsTable.string("source").notNullable();
+    mealsTable.string("source");
+    mealsTable.string("imgURL");
   });
 };
 
