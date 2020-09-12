@@ -2,6 +2,7 @@ const express = require("express");
 const apiRouter = require("./routes/api.router");
 const cors = require("cors");
 const { CLIENT_ORIGIN } = require("./config");
+const ENV = process.env.NODE_ENV || "development";
 
 const cloudinary = require("cloudinary");
 
@@ -24,25 +25,38 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
-// app.use(cors());
+// if (ENV !== "test") {
+//   // Set up a whitelist and check against it:
+//   var whitelist = [
+//     "https://react-image-upload.surge.sh",
+//     "http://localhost:3000",
+//     "http://localhost:9090",
+//   ];
+//   var corsOptions = {
+//     origin: function (origin, callback) {
+//       console.log(origin, "origin");
+//       if (whitelist.indexOf(origin) !== -1) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS", origin));
+//       }
+//     },
+//   };
+//   // Then pass them to cors:
+//   app.use(cors(corsOptions));
+// }
 
-// Set up a whitelist and check against it:
-var whitelist = [
-  "https://react-image-upload.surge.sh",
-  "http://localhost:3000",
-];
-var corsOptions = {
-  origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS", origin));
-    }
-  },
-};
+app.use(cors());
 
-// Then pass them to cors:
-app.use(cors(corsOptions));
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, authorization"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+  next();
+});
 
 app.use(express.json());
 
