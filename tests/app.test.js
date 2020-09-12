@@ -359,7 +359,7 @@ describe("app", () => {
             });
         });
         test("INVALID METHODS: 405 error", () => {
-          const invalidMethods = ["put", "post"];
+          const invalidMethods = ["put"];
           const endPoint = "/api/meals/1";
           const promises = invalidMethods.map((method) => {
             return request(app)

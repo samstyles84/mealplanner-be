@@ -5,6 +5,7 @@ const {
   patchMeal,
   deleteMeal,
   patchVotes,
+  postImage,
 } = require("../models/meals.models");
 
 const { postRecipe, deleteRecipe } = require("../models/recipes.models");
@@ -65,6 +66,19 @@ const updateMeal = (req, res, next) => {
     });
 };
 
+const addImage = (req, res, next) => {
+  const values = Object.values(req.files);
+  const { meal_id } = req.params;
+
+  postImage(meal_id, values)
+    .then((meal) => {
+      res.status(201).send({ meal });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 const updateVotes = (req, res, next) => {
   const { votes } = req.body;
   const { meal_id } = req.params;
@@ -97,4 +111,5 @@ module.exports = {
   updateMeal,
   removeMeal,
   updateVotes,
+  addImage,
 };

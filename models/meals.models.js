@@ -1,4 +1,6 @@
 const knex = require("../connection");
+const cloudinary = require("cloudinary");
+
 const { fetchIngredientsByMealId } = require("./ingredients.models");
 
 exports.fetchMealInfo = (meal_id) => {
@@ -119,4 +121,11 @@ exports.deleteMeal = (meal_id) => {
         return knex("meals").where("meals.meal_id", meal_id).del();
       }
     });
+};
+
+exports.postImage = (meal_id, values) => {
+  const promises = values.map((image) =>
+    cloudinary.uploader.upload(image.path)
+  );
+  return Promise.all(promises).then((results) => console.log(results));
 };
