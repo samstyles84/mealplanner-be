@@ -26,11 +26,23 @@ cloudinary.config({
 
 // app.use(cors());
 
-app.use(
-  cors({
-    origin: CLIENT_ORIGIN,
-  })
-);
+// Set up a whitelist and check against it:
+var whitelist = [
+  "https://react-image-upload.surge.sh",
+  "http://localhost:3000",
+];
+var corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS", origin));
+    }
+  },
+};
+
+// Then pass them to cors:
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
