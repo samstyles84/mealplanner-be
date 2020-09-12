@@ -32,7 +32,8 @@ const sendMealbyId = (req, res, next) => {
 
 const addMeal = (req, res, next) => {
   const { name, portions, recipe, votes, source } = req.body;
-  postMeal(name, portions, recipe, votes, source)
+  //...
+  postMeal(name, portions, votes, source)
     .then((mealRow) => {
       postRecipe(mealRow[0].meal_id, recipe).then((recipemapping) => {
         fetchMealById(recipemapping[0].meal_id).then((meal) => {

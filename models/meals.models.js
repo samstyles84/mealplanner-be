@@ -54,7 +54,7 @@ exports.fetchMealById = (meal_id) => {
   });
 };
 
-exports.postMeal = (name, portions, recipe, votes, source) => {
+exports.postMeal = (name, portions, votes, source) => {
   const mealToInsert = {
     name: name,
     portions: portions,

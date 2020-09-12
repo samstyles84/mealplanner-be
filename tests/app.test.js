@@ -92,7 +92,7 @@ describe("app", () => {
         return Promise.all(promises);
       });
     });
-    describe.only("/meals", () => {
+    describe("/meals", () => {
       test("GET: 200 - responds with an array of all meals", () => {
         return request(app)
           .get("/api/meals")
