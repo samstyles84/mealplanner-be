@@ -2,7 +2,7 @@ module.exports = [
   {
     name: "Corned Beef Hash",
     portions: 4,
-    ingredients: ["Corned Beef", "Baked Beans", "Onion", "Potatoes"],
+    ingredients: ["Corned Beef", "Baked Beans", "Onion (brown)", "Potatoes"],
     quantities: [1, 2, 1, 1000],
     votes: 0,
     source: "Handwritten",
@@ -10,7 +10,7 @@ module.exports = [
   {
     name: "Fishcakes with misc. green veg and waffles",
     portions: 2,
-    ingredients: ["Fishcakes", "Waffles", "Misc green veg"],
+    ingredients: ["Fishcakes", "Waffles", "Green veg (misc)"],
     quantities: [4, 4, 1],
     votes: 0,
     source: "Handwritten",
@@ -19,9 +19,9 @@ module.exports = [
     name: "Lentil and tomato soup",
     portions: 3,
     ingredients: [
-      "Onion",
+      "Onion (brown)",
       "Carrot",
-      "Chopped tomatoes",
+      "Tomatoes (chopped)",
       "Stock cubes",
       "Bacon",
       "Red lentils",

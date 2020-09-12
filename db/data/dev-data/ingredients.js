@@ -85,7 +85,7 @@ module.exports = [
     Units: "g",
   },
   {
-    Name: "Green veg for fishcakes",
+    Name: "Green veg (misc)",
     Type: "Veg",
     Units: "no",
   },
