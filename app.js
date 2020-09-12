@@ -5,6 +5,7 @@ const { CLIENT_ORIGIN } = require("./config");
 const ENV = process.env.NODE_ENV || "development";
 
 const cloudinary = require("cloudinary");
+const formData = require("express-form-data");
 
 const {
   handlePSQLErrors,
@@ -48,17 +49,19 @@ cloudinary.config({
 
 app.use(cors());
 
-app.all("/", function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, authorization"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-  next();
-});
+// app.all("/", function (req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept, authorization"
+//   );
+//   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+//   next();
+// });
 
 app.use(express.json());
+
+app.use(formData.parse());
 
 app.use("/api", apiRouter);
 
