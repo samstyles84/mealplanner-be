@@ -6,6 +6,7 @@ const {
   deleteMeal,
   patchVotes,
   postImage,
+  patchImage,
 } = require("../models/meals.models");
 
 const { postRecipe, deleteRecipe } = require("../models/recipes.models");
@@ -71,9 +72,14 @@ const addImage = (req, res, next) => {
   const { meal_id } = req.params;
 
   postImage(meal_id, values)
-    .then((meal) => {
-      res.status(201).send({ meal });
+    .then((uploadedFileURL) => {
+      console.log(uploadedFileURL, "controller");
+      patchImage(meal_id, uploadedFileURL).then((amendedMeal) => {
+        console.log(amendedMeal, "model");
+        res.status(201).send({ meal: amendedMeal });
+      });
     })
+
     .catch((err) => {
       next(err);
     });

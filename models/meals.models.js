@@ -131,26 +131,20 @@ exports.postImage = (meal_id, values) => {
     cloudinary.uploader.upload(image.path)
   );
   return Promise.all(promises).then((uploadedFiles) => {
-    exports.patchImage(meal_id, uploadedFiles[0].url).then((response) => {
-      console.log(response);
-      return response[0];
-    });
+    return uploadedFiles[0].url;
   });
 };
 
 exports.patchImage = (meal_id, imgURL) => {
   return knex("meals")
     .where("meals.meal_id", meal_id)
-    .update({
-      imgURL: imgURL,
-    })
-    .then((mealArray) => {
-      if (mealArray.length === 0) {
-        return Promise.reject({
-          status: 404,
-          msg: "meal id not found",
-        });
-      }
-      return mealArray[0];
+    .update(
+      {
+        imgURL: imgURL,
+      },
+      ["meal_id", "name", "portions", "votes", "source", "imgURL"]
+    )
+    .then((amendedMeal) => {
+      return amendedMeal;
     });
 };
