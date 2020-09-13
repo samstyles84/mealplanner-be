@@ -14,7 +14,7 @@ const {
 
 require("dotenv").config();
 
-console.log("in app");
+console.log("in the app");
 
 const app = express();
 
