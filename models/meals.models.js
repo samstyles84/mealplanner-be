@@ -131,7 +131,7 @@ exports.postImage = (meal_id, values) => {
     cloudinary.uploader.upload(image.path)
   );
   return Promise.all(promises).then((uploadedFiles) => {
-    return uploadedFiles[0].url;
+    return uploadedFiles[0].secure_url;
   });
 };
 
@@ -145,6 +145,6 @@ exports.patchImage = (meal_id, imgURL) => {
       ["meal_id", "name", "portions", "votes", "source", "imgURL"]
     )
     .then((amendedMeal) => {
-      return amendedMeal;
+      return amendedMeal[0];
     });
 };
