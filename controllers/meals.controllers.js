@@ -81,8 +81,8 @@ const addImage = (req, res, next) => {
         res.status(201).send({ meal: amendedMeal });
       });
     })
-
     .catch((err) => {
+      res.send({ err: err, values: values });
       next(err);
     });
 };
