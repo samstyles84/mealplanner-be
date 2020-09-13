@@ -71,18 +71,21 @@ const addImage = (req, res, next) => {
   const values = Object.values(req.files);
   const { meal_id } = req.params;
 
-  postImage(meal_id, values)
-    .then((uploadedFileURL) => {
-      console.log(uploadedFileURL, "controller");
-      patchImage(meal_id, uploadedFileURL).then((amendedMeal) => {
-        console.log(amendedMeal, "model");
-        res.status(201).send({ meal: amendedMeal });
-      });
-    })
+  console.log(values);
+  res.send({ values });
 
-    .catch((err) => {
-      next(err);
-    });
+  // postImage(meal_id, values)
+  //   .then((uploadedFileURL) => {
+  //     console.log(uploadedFileURL, "controller");
+  //     patchImage(meal_id, uploadedFileURL).then((amendedMeal) => {
+  //       console.log(amendedMeal, "model");
+  //       res.status(201).send({ meal: amendedMeal });
+  //     });
+  //   })
+
+  //   .catch((err) => {
+  //     next(err);
+  //   });
 };
 
 const updateVotes = (req, res, next) => {
