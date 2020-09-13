@@ -299,6 +299,7 @@ describe("app", () => {
                 meal_id: 1,
                 votes: 2,
                 source: "new source!",
+                imgURL: "",
               });
             });
         });

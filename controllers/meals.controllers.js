@@ -32,9 +32,9 @@ const sendMealbyId = (req, res, next) => {
 };
 
 const addMeal = (req, res, next) => {
-  const { name, portions, recipe, votes, source } = req.body;
+  const { name, portions, recipe, votes, source, imgURL } = req.body;
   //...
-  postMeal(name, portions, votes, source)
+  postMeal(name, portions, votes, source, imgURL)
     .then((mealRow) => {
       postRecipe(mealRow[0].meal_id, recipe).then((recipemapping) => {
         fetchMealById(recipemapping[0].meal_id).then((meal) => {
@@ -48,10 +48,10 @@ const addMeal = (req, res, next) => {
 };
 
 const updateMeal = (req, res, next) => {
-  const { name, portions, recipe, votes, source } = req.body;
+  const { name, portions, recipe, votes, source, imgURL } = req.body;
   const { meal_id } = req.params;
 
-  patchMeal(meal_id, name, portions, votes, source)
+  patchMeal(meal_id, name, portions, votes, source, imgURL)
     .then((mealRow) => {
       deleteRecipe(meal_id).then((deletedRows) => {
         postRecipe(meal_id, recipe).then((recipemapping) => {

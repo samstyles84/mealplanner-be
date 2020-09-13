@@ -50,23 +50,25 @@ exports.fetchMealById = (meal_id) => {
         mealObj.portions = promise[0].portions;
         mealObj.votes = promise[0].votes;
         mealObj.source = promise[0].source;
+        mealObj.imgURL = promise[0].imgURL;
       }
     });
     return mealObj;
   });
 };
 
-exports.postMeal = (name, portions, votes, source) => {
+exports.postMeal = (name, portions, votes, source, imgURL) => {
   const mealToInsert = {
     name: name,
     portions: portions,
     votes: votes,
     source: source,
+    imgURL: imgURL,
   };
   return knex("meals").insert(mealToInsert).returning("*");
 };
 
-exports.patchMeal = (meal_id, name, portions, votes, source) => {
+exports.patchMeal = (meal_id, name, portions, votes, source, imgURL) => {
   return knex("meals")
     .where("meals.meal_id", meal_id)
     .increment({
@@ -77,8 +79,9 @@ exports.patchMeal = (meal_id, name, portions, votes, source) => {
         name: name,
         portions: portions,
         source: source,
+        imgURL: imgURL,
       },
-      ["meal_id", "name", "portions", "votes", "source"]
+      ["meal_id", "name", "portions", "votes", "source", "imgURL"]
     )
     .then((mealArray) => {
       if (mealArray.length === 0) {
@@ -127,5 +130,27 @@ exports.postImage = (meal_id, values) => {
   const promises = values.map((image) =>
     cloudinary.uploader.upload(image.path)
   );
-  return Promise.all(promises).then((results) => console.log(results));
+  return Promise.all(promises).then((uploadedFiles) => {
+    exports.patchImage(meal_id, uploadedFiles[0].url).then((response) => {
+      console.log(response);
+      return response[0];
+    });
+  });
+};
+
+exports.patchImage = (meal_id, imgURL) => {
+  return knex("meals")
+    .where("meals.meal_id", meal_id)
+    .update({
+      imgURL: imgURL,
+    })
+    .then((mealArray) => {
+      if (mealArray.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "meal id not found",
+        });
+      }
+      return mealArray[0];
+    });
 };
